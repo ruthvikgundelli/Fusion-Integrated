@@ -57,4 +57,18 @@ known-missing, not attempted-and-broken.
   above), BR-EL-022/034 (withdraw only while pending), BR-EL-023 (cancel
   only approved + pre-start, balance caveat above), BR-EL-036
   (role-based authorization via `HasModuleGrant`/`HasPermission` on every
-  endpoint).
+  endpoint — 6 real HTTP-level tests in
+  `modules/elm/tests/test_api_authorization.py`: anonymous rejected,
+  module-not-granted rejected, missing-specific-permission rejected,
+  authorized employee submit/list, authorized Unit Head decide,
+  decide-without-permission rejected; full suite 27/27).
+
+**Caveat — authorization seeding not verified:** the above tests prove
+`HasModuleGrant`/`HasPermission` enforce correctly *given* a session that
+already carries `modules`/`permissions` (via `stub_iam`, which sets those
+directly on the fake session). They do NOT exercise the real seeding
+pipeline (`manage.py seed_modules`, which is supposed to read
+`registry.py`'s `ROLE_GRANTS`/`PERMISSIONS` into the actual grants
+table) — that command was not inspected or run. So "the DRF permission
+logic is correct" is verified; "a Unit Head actually receives
+`elm.leave_request.decide` in a real deployment" is not.
