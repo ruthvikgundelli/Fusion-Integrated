@@ -42,10 +42,10 @@ class Migration(migrations.Migration):
         ),
         migrations.AddIndex(
             model_name='leaverequest',
-            index=models.Index(fields=['applicant_user_id', 'status'], name='elm_leave_r_applica_1a2b3c_idx'),
+            index=models.Index(fields=['applicant_user_id', 'status'], name='elm_leave_r_applica_557027_idx'),
         ),
         migrations.AddIndex(
             model_name='leaverequest',
-            index=models.Index(fields=['unit_head_user_id', 'status'], name='elm_leave_r_unit_he_4d5e6f_idx'),
+            index=models.Index(fields=['unit_head_user_id', 'status'], name='elm_leave_r_unit_he_f1638f_idx'),
         ),
     ]
