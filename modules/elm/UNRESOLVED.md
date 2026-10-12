@@ -5,6 +5,8 @@ requires that this build does NOT implement. Not a to-do wishlist — these are
 known-missing, not attempted-and-broken.
 
 ## Environment
+**UPDATE (commit 69a0f73):** a Python 3.12 environment was obtained (prebuilt via `uv`, isolated, no system changes). `manage.py check` passes (0 issues); `makemigrations --check` is clean; `migrate elm`+`migrate directory` apply cleanly on a local SQLite substitute; the full submit/decide/withdraw/cancel/substitute service-layer lifecycle actually ran and passed (`modules/elm/tests/test_services.py`, 6/6). Still NOT run: `manage.py test`/full `migrate`, which touch every installed app and hit a pre-existing, unrelated `modules/placement` migration that is Postgres-specific and fails under SQLite — needs this project's real Postgres to verify. Full elm suite (pytest-django, `--no-migrations`, SQLite): 21/21 passing — real evidence, but against a non-Postgres substitute, not re-verified against the real DB.
+
 - Full Django stack (`make install/up/migrate/dev`) could not run: this
   machine has Python 3.10, the project requires >=3.12, and building the
   one dependency without a 3.10 wheel (`rpds-py`) from source needs a Rust
