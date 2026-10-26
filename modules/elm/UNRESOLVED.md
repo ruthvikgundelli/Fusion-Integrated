@@ -19,6 +19,29 @@ known-missing, not attempted-and-broken.
   passing (see commit). This is the only code path with real execution
   evidence.
 
+## Frontend — not implemented at all
+
+This build is backend-only. No client-side (React) code for ELM exists
+anywhere in `client/src`.
+
+- `registry.py`'s `NAV_ITEMS` declares three sidebar links
+  (`/elm/my-requests`, `/elm/apply`, `/elm/approvals`), so the server-driven
+  sidebar WILL show "Leave" / "Employee Leave Management" to any
+  principal holding the relevant permission.
+- Every one of those links currently goes nowhere: `client/src` has no
+  ELM routes, no pages, nothing. Clicking any of them would hit the
+  client's NotFound route. Confirmed by the repo's own check:
+  `ops/checks/nav_matches_routes.py` fails with exactly these three
+  mismatches, and is part of `make check`.
+- Net effect: ELM is reachable only via direct HTTP calls to
+  `/api/v1/elm/*` (curl, Postman, the test suite). There is no way for an
+  actual user to submit, view, or decide on a leave request through
+  Fusion's UI.
+- Not attempted in this repair pass — out of scope per instruction. Building
+  the three pages (My Leave Requests, Apply for Leave, Leave Approvals) is
+  the next real step before this module is usable, separate from any of the
+  backend gaps below.
+
 ## Not implemented at all
 - **Entitlement/balance accounting** (BR-EL-002–009, 025, 027–028): no
   per-category annual entitlement, no carry-forward, no VL→EL year-end

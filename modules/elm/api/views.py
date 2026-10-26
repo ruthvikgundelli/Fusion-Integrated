@@ -19,7 +19,14 @@ MODULE = HasModuleGrant("elm")
 
 
 class MyLeaveRequestsView(APIView):
-    permission_classes = [MODULE, HasPermission("elm.leave_request.view_self")]
+    """Listing and submitting share a URL but are different capabilities:
+    view_self only lets you see your own requests, create is what actually
+    lets you submit one. Each method is gated on its own permission."""
+
+    def get_permissions(self):
+        code = ("elm.leave_request.create" if self.request.method == "POST"
+               else "elm.leave_request.view_self")
+        return [MODULE(), HasPermission(code)()]
 
     @extend_schema(responses=LeaveRequestSerializer(many=True))
     def get(self, request):
@@ -70,20 +77,20 @@ class LeaveRequestDecideView(APIView):
         return Response(LeaveRequestSerializer(row).data)
 
 
+@extend_schema(request=None, responses=LeaveRequestSerializer)
 class LeaveRequestWithdrawView(APIView):
     permission_classes = [MODULE, HasPermission("elm.leave_request.withdraw")]
 
-    @extend_schema(responses=LeaveRequestSerializer)
     def post(self, request, pk):
         row = svc.withdraw(acting_user_id=request.principal.user_id,
                            leave_request_id=pk)
         return Response(LeaveRequestSerializer(row).data)
 
 
+@extend_schema(request=None, responses=LeaveRequestSerializer)
 class LeaveRequestCancelView(APIView):
     permission_classes = [MODULE, HasPermission("elm.leave_request.cancel")]
 
-    @extend_schema(responses=LeaveRequestSerializer)
     def post(self, request, pk):
         row = svc.cancel(acting_user_id=request.principal.user_id,
                          leave_request_id=pk)

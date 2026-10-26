@@ -17,10 +17,7 @@ EMPLOYEE_PERMS = (
     "elm.leave_request.withdraw",
     "elm.leave_request.cancel",
 )
-UNIT_HEAD_PERMS = EMPLOYEE_PERMS + (
-    "elm.leave_request.view",
-    "elm.leave_request.decide",
-)
+UNIT_HEAD_PERMS = (*EMPLOYEE_PERMS, "elm.leave_request.view", "elm.leave_request.decide")
 
 
 def _client(stub_iam, uid, perms, modules=("elm",), kind="staff"):
@@ -47,6 +44,26 @@ def test_missing_specific_permission_is_rejected(stub_iam):
     client = _client(stub_iam, 101, EMPLOYEE_PERMS)
     response = client.get("/api/v1/elm/approvals")
     assert response.status_code == 403
+
+
+def test_user_without_create_permission_cannot_submit(stub_iam):
+    """Has view_self (can list), but lacks elm.leave_request.create: the
+    POST .../my-requests and GET .../my-requests share a URL but must be
+    gated independently."""
+    UserRef.objects.create(user_id=101, username="alice", display_name="Alice",
+                           kind="staff", is_active=True)
+    client = _client(stub_iam, 101, ("elm.leave_request.view_self",))
+
+    response = client.post("/api/v1/elm/my-requests", {
+        "category": "CL", "start_date": "2030-01-10", "end_date": "2030-01-10",
+        "unit_head_user_id": 999,
+    }, format="json")
+    assert response.status_code == 403
+
+    # the same, unrelated permission still lets them list their own requests
+    listed = client.get("/api/v1/elm/my-requests")
+    assert listed.status_code == 200
+    assert LeaveRequest.objects.count() == 0
 
 
 def test_authorized_employee_can_submit_and_list_own_requests(stub_iam):
